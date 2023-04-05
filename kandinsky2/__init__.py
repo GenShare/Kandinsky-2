@@ -162,7 +162,7 @@ def get_kandinsky2_1(
 def construct_kandinsky2_1(
     device,
     task_type="text2img",
-    checkpoint="/tmp/kandinsky2",
+    cache_dir="/tmp/kandinsky2",
     use_flash_attention=False,
 ):
     cache_dir = os.path.join(cache_dir, "2_1")
