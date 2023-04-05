@@ -159,6 +159,88 @@ def get_kandinsky2_1(
     model = Kandinsky2_1(config, cache_model_name, cache_prior_name, device, task_type=task_type)
     return model
 
+def construct_kandinsky2_1(
+    device,
+    task_type="text2img",
+    checkpoint="/tmp/kandinsky2",
+    use_flash_attention=False,
+):
+    cache_dir = os.path.join(cache_dir, "2_1")
+    config = DictConfig(deepcopy(CONFIG_2_1))
+    config["model_config"]["use_flash_attention"] = use_flash_attention
+    if task_type == "text2img":
+        model_name = "decoder_fp16.ckpt"
+        # config_file_url = hf_hub_url(repo_id="sberbank-ai/Kandinsky_2.1", filename=model_name)
+    elif task_type == "inpainting":
+        model_name = "inpainting_fp16.ckpt"
+        # config_file_url = hf_hub_url(repo_id="sberbank-ai/Kandinsky_2.1", filename=model_name)
+    '''
+    cached_download(
+        config_file_url,
+        cache_dir=cache_dir,
+        force_filename=model_name,
+        use_auth_token=use_auth_token,
+    )
+    '''
+    prior_name = "prior_fp16.ckpt"
+    '''
+    config_file_url = hf_hub_url(repo_id="sberbank-ai/Kandinsky_2.1", filename=prior_name)
+    cached_download(
+        config_file_url,
+        cache_dir=cache_dir,
+        force_filename=prior_name,
+        use_auth_token=use_auth_token,
+    )
+    '''
+
+    cache_dir_text_en = os.path.join(cache_dir, "text_encoder")
+    for name in [
+        "config.json",
+        "pytorch_model.bin",
+        "sentencepiece.bpe.model",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+    ]:
+        '''
+        config_file_url = hf_hub_url(repo_id="sberbank-ai/Kandinsky_2.1", filename=f"text_encoder/{name}")
+        cached_download(
+            config_file_url,
+            cache_dir=cache_dir_text_en,
+            force_filename=name,
+            use_auth_token=use_auth_token,
+        )
+        '''
+
+    '''
+    config_file_url = hf_hub_url(repo_id="sberbank-ai/Kandinsky_2.1", filename="movq_final.ckpt")
+    cached_download(
+        config_file_url,
+        cache_dir=cache_dir,
+        force_filename="movq_final.ckpt",
+        use_auth_token=use_auth_token,
+    )
+    '''
+
+    '''
+    config_file_url = hf_hub_url(repo_id="sberbank-ai/Kandinsky_2.1", filename="ViT-L-14_stats.th")
+    cached_download(
+        config_file_url,
+        cache_dir=cache_dir,
+        force_filename="ViT-L-14_stats.th",
+        use_auth_token=use_auth_token,
+    )
+    '''
+
+    config["tokenizer_name"] = cache_dir_text_en
+    config["text_enc_params"]["model_path"] = cache_dir_text_en
+    config["prior"]["clip_mean_std_path"] = os.path.join(cache_dir, "ViT-L-14_stats.th")
+    config["image_enc_params"]["ckpt_path"] = os.path.join(cache_dir, "movq_final.ckpt")
+    cache_model_name = os.path.join(cache_dir, model_name)
+    cache_prior_name = os.path.join(cache_dir, prior_name)
+    model = Kandinsky2_1(config, cache_model_name, cache_prior_name, device, task_type=task_type)
+    return model
+
 
 def get_kandinsky2(
     device,
